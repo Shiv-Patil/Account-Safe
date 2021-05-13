@@ -1,13 +1,17 @@
 import sys
 import os
 from kivy.config import Config
+from kivy.utils import platform
 Config.set('kivy', 'exit_on_escape', '0')
-Config.set('graphics', 'minimum_width', 480)
-Config.set('graphics', 'minimum_height', 720)
-Config.set('graphics', 'width', 1280)
-Config.set('graphics', 'height', 720)
 os.environ["KIVY_USE_DEFAULTCONFIG"] = "1"
 os.environ["KIVY_NO_ARGS"] = "1"
+if platform != "android":
+    Config.set('graphics', 'window_state', 'hidden')
+    os.environ["KIVY_METRICS_DENSITY"] = "1.5"
+    Config.set('graphics', 'minimum_width', 480)
+    Config.set('graphics', 'minimum_height', 720)
+    Config.set('graphics', 'width', 1280)
+    Config.set('graphics', 'height', 720)
 
 from kivy.resources import resource_add_path
 from kivy.properties import ColorProperty, NumericProperty, StringProperty
@@ -17,7 +21,6 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, FadeTransition
 from kivy.uix.modalview import ModalView
 import json
-from kivy.utils import platform
 from kivymd.app import MDApp
 from kivy.core.window import Window
 SharedStorage, PrivateStorage = None, None
@@ -55,6 +58,7 @@ class AccountSafe(MDApp):
         self.switch_screen("settings")
 
     def build(self):
+        self.icon = self.resource_path('res/icon.png')
         self.app_settings = os.path.join(
             getattr(self, 'user_data_dir'), 'database', 'config.json')
 
@@ -93,6 +97,8 @@ class AccountSafe(MDApp):
         self.root.transition = FadeTransition()
         self.get_theme()
         self.switch_screen("login")
+        if platform != "android":
+            Window.show()
 
     def on_dropfile(self, window, file_path):
         if self.root.current == 'login':

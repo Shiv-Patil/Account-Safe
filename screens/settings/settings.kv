@@ -1,0 +1,246 @@
+<Settings>:
+    name: 'settings'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: app.bg_color
+
+        MDToolbar:
+            title: "Settings"
+            left_action_items: [["arrow-left", lambda x: app.back_button(self, 27)]]
+            elevation: app.elevation
+
+        ScrollView:
+            effect_cls : 'ScrollEffect'
+
+            MDBoxLayout:
+                orientation: 'vertical'
+                adaptive_height: True
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    padding: 0, dp(20), 0, 0
+                    spacing: dp(4)
+
+                    MDBoxLayout:
+                        adaptive_height: True
+                        padding: dp(20), 0, 0, 0
+
+                        MDLabel:
+                            text: "Display"
+                            font_style: 'Subtitle2'
+                            size_hint_y: None
+                            height: self.texture_size[1]
+
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.theme_picker()
+
+                        MDIcon:
+                            id: theme_icon
+                            icon: "theme-light-dark"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+
+                            MDLabel:
+                                text: "Theme"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDLabel:
+                                text: app.theme
+                                font_style: 'Caption'
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.color_picker()
+
+                        MDIcon:
+                            id: theme_icon
+                            icon: "format-color-fill"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+
+                            MDLabel:
+                                text: "Color"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDLabel:
+                                text: app.theme_cls.primary_palette
+                                font_style: 'Caption'
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                MDSeparator
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    padding: 0, dp(20), 0, 0
+                    spacing: dp(4)
+
+                    MDBoxLayout:
+                        adaptive_height: True
+                        padding: dp(20), 0, 0, 0
+
+                        MDLabel:
+                            text: "Backups"
+                            font_style: 'Subtitle2'
+                            size_hint_y: None
+                            height: self.texture_size[1]
+
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.import_backup()
+
+                        MDIcon:
+                            id: backup_icon
+                            icon: "backup-restore"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            pos_hint: {'center_y': .5}
+
+                            MDLabel:
+                                text: "Import"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+
+<ThemeConfirmContent>:
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: 'vertical'
+
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        md_bg_color: app.bg_color
+        ripple_behavior: True
+        elevation: 0
+        padding: 0, dp(10)
+        spacing: dp(10)
+        on_release: check_light._do_press()
+
+        CheckBox:
+            id: check_light
+            allow_no_selection: False
+            group: "check"
+            size_hint_x: None
+            width: dp(30)
+            on_active: app.settings.selected_theme = 'Light'
+
+        MDLabel:
+            text: 'Light'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        md_bg_color: app.bg_color
+        ripple_behavior: True
+        elevation: 0
+        padding: 0, dp(10)
+        spacing: dp(10)
+        on_release: check_dark._do_press()
+
+        CheckBox:
+            id: check_dark
+            allow_no_selection: False
+            group: "check"
+            size_hint_x: None
+            width: dp(30)
+            on_active: app.settings.selected_theme = 'Dark'
+
+        MDLabel:
+            text: 'Dark'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+
+<PrimaryColorSelector>
+    canvas:
+        Color:
+            rgba: root.rgb_hex(root.color_name)
+        Ellipse:
+            size: self.size
+            pos: self.pos
+    on_release:
+        app.theme_cls.primary_palette = root.color_name
+        app.alt_primary_color = list(map(lambda x: app.bg_color[1]*0.6+0.4*x, app.theme_cls.primary_color[:3]))+[1]
+
+
+<PrimaryColorPicker>:
+    size_hint: None, None
+    size: grid.width, toolbar.height + primary_box.height
+
+    MDBoxLayout:
+        orientation: "vertical"
+        md_bg_color: app.bg_color
+
+        MDToolbar:
+            id: toolbar
+            title: "Change color"
+
+        RecycleView:
+            id: primary_box
+            effect_cls : 'ScrollEffect'
+            smooth_scroll_end: 10
+            viewclass: 'PrimaryColorSelector'
+            size_hint: None, None
+            height: grid.height
+            width: grid.width
+            data: [{"color_name": "Red"}, {"color_name": "Pink"}, {"color_name": "Purple"}, {"color_name": "DeepPurple"}, {"color_name": "Indigo"},{"color_name": "Blue"}, {"color_name": "LightBlue"}, {"color_name": "Cyan"}, {"color_name": "Teal"}, {"color_name": "Green"}, {"color_name": "LightGreen"}, {"color_name": "Lime"}, {"color_name": "Yellow"}, {"color_name": "Amber"}, {"color_name": "Orange"}, {"color_name": "DeepOrange"}]
+            RecycleGridLayoutFix:
+                id: grid
+                default_size: None, None
+                default_size_hint: None, None
+                cols: 4
+                spacing: dp(8)
+                padding: dp(12)
+                pos_hint: {"center_x": .5, "top": 1}
+                size_hint: None, None
+                height: self.minimum_height
+                width: self.minimum_width
+
+        MDFlatButton:
+            text: "CLOSE"
+            pos: root.width - self.width - 10, 10
+            on_release: app.settings.close_dialog()

@@ -1,0 +1,131 @@
+#:import RecycleGridLayoutFix widgets.recyclegridlayout.RecycleGridLayoutFix
+
+<Accounts>:
+    name: 'accounts'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: app.bg_color
+
+        MDToolbar:
+            title: "Accounts"
+            left_action_items: [["arrow-left", lambda x: app.back_button(root, 27)]]
+            right_action_items: [["cog", lambda x: app.switch_screen('settings')]]
+            elevation: app.elevation
+
+        RecycleView:
+            id: rv
+            effect_cls : 'ScrollEffect'
+            smooth_scroll_end: 10
+            viewclass: 'AccountItem'
+
+            RecycleGridLayoutFix:
+                id: r_grid
+                default_size: None, None
+                default_size_hint: 1, None
+                cols: max(min(int((self.width-dp(20))/(dp(120)+dp(20))), len(self.parent.data)), 1)
+                size_hint: 1, None
+                height: max(self.minimum_height, rv.height)
+                padding: dp(20)
+                spacing: dp(20)
+
+
+<AccountItem@AnchorLayout>:
+    size_hint_y: None
+    height: box.height
+    name: " "
+    letter: " "
+    color_tint: 1, 1, 1, 1
+    pinned: 0 # False
+    MDCard:
+        orientation: "vertical"
+        size_hint: None, None
+        height: box.height
+        width: self.height
+        pos_hint: {"center_x": .5, "center_y": .5}
+        radius: 15
+        ripple_behavior: True
+        elevation: app.elevation
+        md_bg_color: app.bg_color_2
+        on_touch_down: app.accounts.account_touch_down(root) if args[0].collide_point(*args[1].pos) else None
+        on_touch_move: app.accounts.account_touch_move(root)
+        on_touch_up: app.accounts.account_touch_up(root)
+        on_release: app.accounts.account_clicked(root)
+
+        FloatLayout:    
+
+            AnchorLayout:
+                size_hint: None, None
+                size: self.parent.parent.size
+                pos: self.parent.parent.pos
+                anchor_x: 'left'
+                anchor_y: 'top'
+                padding: dp(5)
+
+                MDIcon:
+                    size_hint: None, None
+                    size: self.texture_size
+                    icon: "pin" if root.pinned else ""
+                    theme_text_color: "Custom"
+                    text_color: app.text_color[:3] + [0.7]
+
+        BoxLayout:
+            id: box
+            size_hint_y: None
+            height: self.minimum_height
+            orientation: "vertical"
+            spacing: dp(10)
+            padding: 0, dp(15)
+            pos_hint: {'center_y': 0.5, 'center_x': 0.5}
+
+            Label:
+                id: letter
+                text: root.letter
+                font_info: app.theme_cls.font_styles["H3"]
+                font_name: self.font_info[0]
+                font_size: sp(self.font_info[1])
+                size_hint: None, None
+                width: dp(60)
+                height: self.width
+                halign: 'center'
+                valign: 'middle'
+                pos_hint: {'center_y': 0.5, 'center_x': 0.5}
+                canvas.before:
+                    Color:
+                        rgba: root.color_tint[:3] + [0.6]
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [15, 15, 15, 15]
+
+            MDLabel:
+                id: name
+                text: root.name
+                size_hint: 1, None
+                height: self.texture_size[1]
+                shorten: True
+                shorten_from: 'right'
+                halign: 'center'
+                pos_hint: {'center_y': 0.5, 'center_x': 0.5}
+
+
+<AddAccountDialogContent>:
+    orientation: 'vertical'
+    spacing: dp(12)
+    padding: 0, dp(12), 0, 0
+    size_hint_y: None
+    height: self.minimum_height
+
+    MDLabel:
+        text: "Enter account category name."
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDTextField:
+        id: name
+        hint_text: "Category"
+        helper_text: ""
+        helper_text_mode: "persistent"
+        helper_text_color: .9, 0, 0, 1
+        size_hint_y: None
+        height: self.minimum_height*1.2

@@ -1,0 +1,177 @@
+#:import Snackbar kivymd.uix.snackbar.Snackbar
+#:import Window kivy.core.window.Window
+
+<Dashboard>:
+    name: 'dashboard'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: app.bg_color
+
+        MDToolbar:
+            title: "Dashboard"
+            right_action_items: [["cog", lambda x: app.switch_screen('settings')]]
+            left_action_items: [["logout", lambda x: app.back_button(root, 27)]]
+            elevation: app.elevation
+
+        MDGridLayout:
+            cols: 1
+
+            MDBoxLayout:
+                id: user_card_box
+                padding: dp(20)
+                adaptive_height: True
+
+                MDCard:
+                    padding: dp(10)
+                    size_hint_y: None
+                    height: self.minimum_height
+                    md_bg_color: app.bg_color_2
+                    elevation: app.elevation
+
+                    AnchorLayout:
+                        size_hint_y: None
+                        height: user_card.height
+
+                        UserDisplay:
+                            id: user_card
+                            max_width: user_card_box.width*.65
+
+            MDGridLayout:
+                cols: 1
+                md_bg_color: app.theme_cls.primary_color[:3]+[0.75]
+                radius: 15, 15, 0, 0
+
+                MDBoxLayout:
+                    orientation: 'horizontal'
+                    size_hint_y: .6
+                    padding: dp(20)
+                    spacing: dp(20)
+
+                    MDCard:
+                        orientation: "vertical"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        elevation: app.elevation
+                        md_bg_color: app.alt_primary_color
+                        radius: 15
+
+                        AnchorLayout:
+
+                            MDBoxLayout:
+                                adaptive_height: True
+                                orientation: "vertical"
+                                spacing: dp(20)
+
+                                MDLabel:
+                                    id: account_count
+                                    text: "0"
+                                    font_style: 'H6'
+                                    size_hint_x: 1
+                                    height: self.texture_size[1]
+                                    halign: 'center'
+                                    font_name: 'Poppins'
+
+                                MDLabel:
+                                    text: "Accounts"
+                                    font_style: 'Caption'
+                                    size_hint_x: 1
+                                    height: self.texture_size[1]
+                                    halign: 'center'
+
+                    MDCard:
+                        orientation: "vertical"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        elevation: app.elevation
+                        md_bg_color: app.alt_primary_color
+                        radius: 15
+
+                        AnchorLayout:
+
+                            MDBoxLayout:
+                                adaptive_height: True
+                                orientation: "vertical"
+                                spacing: dp(20)
+
+                                MDLabel:
+                                    id: password_count
+                                    text: "0"
+                                    font_style: 'H6'
+                                    size_hint_x: 1
+                                    height: self.texture_size[1]
+                                    halign: 'center'
+                                    font_name: 'Poppins'
+
+                                MDLabel:
+                                    text: "Passwords stored"
+                                    font_style: 'Caption'
+                                    size_hint_x: 1
+                                    height: self.texture_size[1]
+                                    halign: 'center'
+
+                MDGridLayout:
+                    cols: 1
+                    md_bg_color: app.bg_color
+                    radius: 15, 15, 0, 0
+                    padding: dp(20)
+                    spacing: dp(20)
+
+                    MDCard:
+                        orientation: "vertical"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        radius: 15
+                        ripple_behavior: True
+                        md_bg_color: app.bg_color_3
+                        elevation: app.elevation
+                        on_release: app.switch_screen('accounts')
+
+                        AnchorLayout:
+
+                            MDLabel:
+                                text: "My Accounts"
+                                font_style: 'H6'
+                                size: self.texture_size
+                                halign: 'center'
+                                font_name: 'Poppins'
+
+                    MDCard:
+                        orientation: "vertical"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        radius: 15
+                        ripple_behavior: True
+                        md_bg_color: app.bg_color_3
+                        elevation: app.elevation
+                        on_release: root.create_backup()
+
+                        AnchorLayout:
+
+                            MDLabel:
+                                text: "Create backup"
+                                font_style: 'H6'
+                                size: self.texture_size
+                                halign: 'center'
+                                font_name: 'Poppins'
+
+
+<UserDisplay@MDBoxLayout>:
+    spacing: "20dp"
+    adaptive_size: True
+    padding: 0, 0, dp(10), 0
+    max_width: 100
+
+    FitImage:
+        id: user_avatar
+        source: 'data/logo/kivy-icon-128.png'
+        size_hint: None, None
+        width: dp(64)
+        height: self.width
+        pos_hint: {'center_y': 0.5}
+
+    MDLabel:
+        id: user_name
+        text: ' '
+        font_style: "H6"
+        size_hint: None, None
+        size: self.texture_size
+        text_size: (None if self.width<root.max_width else root.max_width+1, None)
+        pos_hint: {'center_y': 0.5}
+        font_name: 'Poppins'

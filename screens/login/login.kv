@@ -1,0 +1,180 @@
+#: import ew kivy.uix.effectwidget
+
+<Login>:
+    name: 'login'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: app.bg_color
+
+        MDToolbar:
+            title: "Account Safe"
+            right_action_items: [["cog", lambda x: app.switch_screen('settings')]]
+            elevation: app.elevation
+
+        MDGridLayout:
+            cols: 1
+
+            AnchorLayout:
+
+                RecycleView:
+                    id: rv
+                    viewclass: 'UserListItem'
+                    effect_cls : 'ScrollEffect'
+                    smooth_scroll_end: 10
+
+                    RecycleBoxLayout:
+                        default_size: None, None
+                        default_size_hint: 1, None
+                        size_hint_y: None
+                        padding: dp(15), dp(20)
+                        spacing: dp(20)
+                        height: self.minimum_height
+                        orientation: 'vertical'
+
+    AnchorLayout:
+        anchor_x: 'right'
+        anchor_y: 'bottom'
+        padding: 10
+        MDBoxLayout:
+            id: add_button_cover
+            adaptive_size: True
+            MDFloatingActionButton:
+                icon: "plus"
+                elevation: app.elevation
+                on_release: root.add_button_clicked()
+
+
+<UserListItem@MDCard>:
+    text: "Account"
+    password: ''
+    source: ""
+    size_hint_y: None
+    height: self.minimum_height
+    elevation: app.elevation
+    ripple_behavior: True
+    md_bg_color: app.bg_color_2
+    on_touch_down: app.login.user_touch_down(args[0]) if args[0].collide_point(*args[1].pos) else None
+    on_touch_move: app.login.user_touch_move(args[0])
+    on_touch_up: app.login.user_touch_up(args[0])
+    on_release: app.login.user_clicked(args[0])
+
+    OneLineAvatarListItem:
+        text: root.text
+        source: root.source
+        font_name: 'Poppins'
+
+        ImageLeftWidget:
+            source: root.source
+
+<AddUserDialogContent>:
+    orientation: 'vertical'
+    spacing: dp(12)
+    size_hint_y: None
+    height: self.minimum_height
+    padding: 0, dp(36), 0, 0
+
+    MDLabel:
+        text: "Enter a memorable password because this will be used for locking all accounts."
+        size_hint_y: None
+        font_style: 'Subtitle1'
+        height: self.texture_size[1]
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        adaptive_height: True
+
+        MDTextField:
+            id: name
+            hint_text: "Name"
+            helper_text: ""
+            helper_text_mode: "persistent"
+            helper_text_color: .9, 0, 0, 1
+            font_name: 'Poppins'
+            size_hint_y: None
+            height: self.minimum_height*1.2
+
+        MDTextField:
+            id: password
+            hint_text: "Password"
+            helper_text: ""
+            helper_text_mode: "persistent"
+            helper_text_color: .9, 0, 0, 1
+            font_name: 'Poppins'
+            size_hint_y: None
+            height: self.minimum_height*1.2
+
+<LoginUserDialogContent>:
+    orientation: 'vertical'
+    spacing: dp(12)
+    size_hint_y: None
+    height: self.minimum_height
+    name: ""
+
+    MDLabel:
+        text: root.name
+        size_hint_y: None
+        height: self.texture_size[1]
+        font_name: 'Poppins'
+
+    BoxLayout:
+        id: box
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: self.minimum_height
+        MDTextField:
+            id: password
+            hint_text: "Password"
+            helper_text: ""
+            helper_text_mode: "persistent"
+            password: True
+            helper_text_color: .9, 0, 0, 1
+            font_name: 'Poppins'
+            size_hint_y: None
+            height: self.minimum_height*1.2
+        MDIconButton:
+            id: show_pass_button
+            icon: 'eye-off'
+            on_release:
+                self.icon = 'eye' if self.icon == 'eye-off' else 'eye-off'
+                password.password = True if self.icon == 'eye-off' else False
+
+
+<DeleteUserDialogContent>:
+    orientation: 'vertical'
+    spacing: dp(12)
+    size_hint_y: None
+    height: self.minimum_height
+    name: ""
+
+    MDLabel:
+        text: "Enter password to confirm delete. Please note that this action is irreversible."
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: root.name
+        size_hint_y: None
+        height: self.texture_size[1]
+        font_name: 'Poppins'
+
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: None
+        height: self.minimum_height
+        MDTextField:
+            id: password
+            hint_text: "Password"
+            helper_text: ""
+            helper_text_mode: "persistent"
+            password: True
+            helper_text_color: .9, 0, 0, 1
+            font_name: 'Poppins'
+            size_hint_y: None
+            height: self.minimum_height*1.2
+        MDIconButton:
+            id: show_pass_button
+            icon: 'eye-off'
+            on_release:
+                self.icon = 'eye' if self.icon == 'eye-off' else 'eye-off'
+                password.password = True if self.icon == 'eye-off' else False

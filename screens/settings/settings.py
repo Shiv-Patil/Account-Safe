@@ -94,7 +94,8 @@ class Settings(MDScreen):
             app.elevation = 10
             app.theme_cls.theme_style = "Light"
             app.theme = "Light"
-        app.alt_primary_color = list(map(lambda x: app.bg_color[1]*0.6+0.4*x, app.theme_cls.primary_color[:3]))+[1]
+        app.alt_primary_color = list(
+            map(lambda x: app.bg_color[1]*0.6+0.4*x, app.theme_cls.primary_color[:3]))+[1]
         try:
             self.dialog.md_bg_color = app.bg_color
         except AttributeError:
@@ -140,7 +141,8 @@ class Settings(MDScreen):
                 self.importing_backup(file)
             else:
                 self.backup_imported((False, "Import Cancelled"))
-        app.filechooser.open_file(title="Import backup", on_selection=file_chosen)
+        app.filechooser.open_file(
+            title="Import backup", on_selection=file_chosen)
 
     @mainthread
     def importing_backup(self, file):
@@ -167,16 +169,20 @@ class Settings(MDScreen):
                 else:
                     break
             save_query = "INSERT INTO users (name, key, salt, avatar) VALUES (?, ?, ?, ?)"
-            app.db.execute_query(save_query, (user[0], user[1], user[2], user[3]))
+            app.db.execute_query(
+                save_query, (user[0], user[1], user[2], user[3]))
             user_id = app.db.execute_read_query(select_query, (user[0],))[0][0]
             select_query = "SELECT id FROM accounts WHERE name = ?"
             for account in result[1].get('accounts'):
                 save_query = "INSERT INTO accounts (user, name, pinned) VALUES (?, ?, ?)"
-                app.db.execute_query(save_query, (user_id, account.get('name'), account.get('pinned')))
-                acc_id = app.db.execute_read_query(select_query, (account.get('name'),))[0][0]
+                app.db.execute_query(
+                    save_query, (user_id, account.get('name'), account.get('pinned')))
+                acc_id = app.db.execute_read_query(
+                    select_query, (account.get('name'),))[0][0]
                 for password in account.get('passwords'):
                     save_query = "INSERT INTO passwords (user, account, username, password, strength, color) VALUES (?, ?, ?, ?, ?, ?)"
-                    app.db.execute_query(save_query, (user_id, acc_id, password.get('username'), password.get('password'), password.get('strength'), password.get('color')))
+                    app.db.execute_query(save_query, (user_id, acc_id, password.get(
+                        'username'), password.get('password'), password.get('strength'), password.get('color')))
             self.snackbar.text = f"Successfully imported backup as {user[0]}"
             app.login.display_users()
         except BaseException as e:
@@ -215,7 +221,7 @@ class ThemeConfirmContent(BoxLayout):
 
     def set_icon(self):
         self.ids.check.active = True
-        check_list =  self.ids.check.get_widgets(self.ids.check.group)
+        check_list = self.ids.check.get_widgets(self.ids.check.group)
         for check in check_list:
             if check != self.ids.check:
                 check.active = False

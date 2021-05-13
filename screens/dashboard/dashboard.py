@@ -39,10 +39,12 @@ class Dashboard(MDScreen):
         self.ids.user_card.ids.user_name.text = self.current_user.text
         self.ids.user_card.ids.user_avatar.source = self.current_user.source
         select_query = "SELECT * FROM accounts WHERE user = ?"
-        account_list = app.db.execute_read_query(select_query, (self.current_user.id,))
+        account_list = app.db.execute_read_query(
+            select_query, (self.current_user.id,))
         self.ids.account_count.text = str(len(account_list))
         select_query = "SELECT * FROM passwords WHERE user = ?"
-        password_list = app.db.execute_read_query(select_query, (self.current_user.id,))
+        password_list = app.db.execute_read_query(
+            select_query, (self.current_user.id,))
         self.ids.password_count.text = str(len(password_list))
 
     def on_enter(self):
@@ -64,12 +66,14 @@ class Dashboard(MDScreen):
             self.filename = self.current_user.text+".accountsafebackup"
             self.filepath = os.path.join(app.backup_dir, self.filename)
             if backups.save_backup(self.filepath):
-                uri = FileProvider.getUriForFile(Context.getApplicationContext(), Context.getApplicationContext().getPackageName() + ".fileprovider", File(self.filepath))
+                uri = FileProvider.getUriForFile(Context.getApplicationContext(
+                ), Context.getApplicationContext().getPackageName() + ".fileprovider", File(self.filepath))
                 if uri:
                     self.share.share_uri(uri)
             Window.bind(on_key_up=app.back_button)
             app.loader.dismiss()
             return
+
         def folder_chosen(selection):
             if selection:
                 folder = selection[0]
@@ -79,11 +83,13 @@ class Dashboard(MDScreen):
                     else:
                         self.backup_created(False)
                         return
-                backup_path = os.path.join(folder, 'krk', self.current_user.text+".accountsafebackup")
+                backup_path = os.path.join(
+                    folder, 'krk', self.current_user.text+".accountsafebackup")
                 self.backup_created(backups.save_backup(backup_path))
             else:
                 self.backup_created(False)
-        app.filechooser.choose_dir(title="Save backup", on_selection=folder_chosen)
+        app.filechooser.choose_dir(
+            title="Save backup", on_selection=folder_chosen)
 
     @mainthread
     def backup_created(self, result):
@@ -95,6 +101,6 @@ class Dashboard(MDScreen):
             return
         self.snackbar.text = "Backup saved successfully"
         self.snackbar.open()
-        
+
 
 Builder.load_file('dashboard.kv')

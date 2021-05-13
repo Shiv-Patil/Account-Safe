@@ -43,16 +43,18 @@ user_json = {
                         }
                     },
                 }
-            }    
+            }
         }
     }
 }
+
 
 def save_backup(path):
     backup = dict()
 
     user = app.dashboard.current_user
-    backup['user'] = [user.text, user.key, user.salt.decode('cp437'), user.source]
+    backup['user'] = [user.text, user.key,
+                      user.salt.decode('cp437'), user.source]
     backup['accounts'] = []
 
     select_query = "SELECT * FROM accounts WHERE user = ?"
@@ -82,7 +84,8 @@ def save_backup(path):
     except ValidationError:
         return False
 
-    key = encryption.generate_key(b'y\xcb\xed\nU\xa9\x12n\xb4\xb8\x8d<\xff\xc0\x1b\xcb', 'KrYmZiN')
+    key = encryption.generate_key(
+        b'y\xcb\xed\nU\xa9\x12n\xb4\xb8\x8d<\xff\xc0\x1b\xcb', 'KrYmZiN')
     to_store = encryption.encrypt(key, json.dumps(backup))
 
     dir = os.path.dirname(path)
@@ -94,6 +97,7 @@ def save_backup(path):
 
     return True
 
+
 def load_backup(path):
     file = ""
     try:
@@ -104,7 +108,8 @@ def load_backup(path):
     except:
         traceback.print_exc()
         return (False, "Invalid backup file")
-    key = encryption.generate_key(b'y\xcb\xed\nU\xa9\x12n\xb4\xb8\x8d<\xff\xc0\x1b\xcb', 'KrYmZiN')
+    key = encryption.generate_key(
+        b'y\xcb\xed\nU\xa9\x12n\xb4\xb8\x8d<\xff\xc0\x1b\xcb', 'KrYmZiN')
     try:
         loaded = encryption.decrypt(key, file)
     except InvalidToken:

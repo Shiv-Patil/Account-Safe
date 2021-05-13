@@ -6,7 +6,8 @@ app = MDApp.get_running_app()
 
 class SqlOperator:
     def __init__(self):
-        self.storage_dir = os.path.join(getattr(app, 'user_data_dir'), 'database')
+        self.storage_dir = os.path.join(
+            getattr(app, 'user_data_dir'), 'database')
         if not os.path.isdir(self.storage_dir):
             os.makedirs(self.storage_dir)
         self.PATH = os.path.join(self.storage_dir, 'user_db.db')
@@ -49,17 +50,20 @@ class SqlOperator:
         self.execute_query(accounts)
         self.execute_query(passwords)
 
-        columns = [i[1] for i in self.execute_read_query("PRAGMA table_info (users)")]
+        columns = [i[1]
+                   for i in self.execute_read_query("PRAGMA table_info (users)")]
         if columns != ['id', 'name', 'salt', 'avatar', 'key']:
             self.execute_query("DROP TABLE IF EXISTS users")
             self.create_tables()
 
-        columns = [i[1] for i in self.execute_read_query("PRAGMA table_info (accounts)")]
+        columns = [i[1] for i in self.execute_read_query(
+            "PRAGMA table_info (accounts)")]
         if columns != ['id', 'user', 'name', 'pinned']:
             self.execute_query("DROP TABLE IF EXISTS accounts")
             self.create_tables()
 
-        columns = [i[1] for i in self.execute_read_query("PRAGMA table_info (passwords)")]
+        columns = [i[1] for i in self.execute_read_query(
+            "PRAGMA table_info (passwords)")]
         if columns != ['id', 'user', 'account', 'username', 'password', 'strength', 'color']:
             self.execute_query("DROP TABLE IF EXISTS passwords")
             self.create_tables()

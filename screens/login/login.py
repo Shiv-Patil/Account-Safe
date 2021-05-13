@@ -131,7 +131,8 @@ class Login(MDScreen):
         if len(password.text) > 32:
             password.helper_text = "Password too long. Please limit it to 32 characters."
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM users WHERE name=?)"
-        is_dupli = app.db.execute_read_query(check_duplicate, (name.text.strip(),))
+        is_dupli = app.db.execute_read_query(
+            check_duplicate, (name.text.strip(),))
         try:
             if is_dupli[0][0] == 0:
                 pass
@@ -150,7 +151,8 @@ class Login(MDScreen):
         encrypting_key = app.encryption.generate_key(salt, password)
         key = app.encryption.encrypt(encrypting_key, 'KrYmZiN')
         save_query = "INSERT INTO users (name, key, salt, avatar) VALUES (?, ?, ?, ?)"
-        app.db.execute_query(save_query, (name, key, salt, "data/logo/kivy-icon-128.png"))
+        app.db.execute_query(save_query, (name, key, salt,
+                                          "data/logo/kivy-icon-128.png"))
         self.display_users()
 
     def close_dialog(self, *args):
@@ -172,7 +174,8 @@ class Login(MDScreen):
     def user_touch_down(self, user_list_item):
         Clock.unschedule(self.selection_timer)
         self.selected = False
-        self.selection_timer = Clock.schedule_once(lambda dt: self.select(user_list_item), self.selection_time)
+        self.selection_timer = Clock.schedule_once(
+            lambda dt: self.select(user_list_item), self.selection_time)
 
     def user_touch_move(self, user_list_item):
         Clock.unschedule(self.selection_timer)
@@ -233,7 +236,8 @@ class Login(MDScreen):
         salt = user_list_item.salt
         encrypting_key = app.encryption.generate_key(salt, password.text)
         try:
-            decrypted = app.encryption.decrypt(encrypting_key, user_list_item.key)
+            decrypted = app.encryption.decrypt(
+                encrypting_key, user_list_item.key)
             if decrypted == 'KrYmZiN':
                 return True
         except InvalidToken:
@@ -247,7 +251,7 @@ class Login(MDScreen):
             user_list_item.password = password.text
             self.user_logged_in(user_list_item)
             return
-        password.helper_text = "Invalid Password."      
+        password.helper_text = "Invalid Password."
 
     def user_logged_in(self, user_list_item):
         self.close_dialog()
@@ -292,8 +296,10 @@ class Login(MDScreen):
 class AddUserDialogContent(BoxLayout):
     pass
 
+
 class LoginUserDialogContent(BoxLayout):
     pass
+
 
 class DeleteUserDialogContent(BoxLayout):
     pass

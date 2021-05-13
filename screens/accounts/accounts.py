@@ -36,7 +36,8 @@ class Accounts(MDScreen):
             'pinned': False
         })
         select_query = "SELECT * FROM accounts WHERE user = ?"
-        self.account_list = app.db.execute_read_query(select_query, (app.dashboard.current_user.id,))
+        self.account_list = app.db.execute_read_query(
+            select_query, (app.dashboard.current_user.id,))
         if not self.account_list:
             return
         accounts = []
@@ -50,7 +51,8 @@ class Accounts(MDScreen):
             accounts.append(tmp)
         accounts_pinned, accounts_not_pinned = [], []
         for account in accounts:
-            accounts_pinned.append(account) if account.get("pinned") else accounts_not_pinned.append(account)
+            accounts_pinned.append(account) if account.get(
+                "pinned") else accounts_not_pinned.append(account)
         accounts_pinned.sort(key=lambda x: x.get('name'))
         accounts_not_pinned.sort(key=lambda x: x.get('name'))
         for account in accounts_pinned+accounts_not_pinned:
@@ -68,7 +70,8 @@ class Accounts(MDScreen):
             return
         Clock.unschedule(self.selection_timer)
         self.selected = False
-        self.selection_timer = Clock.schedule_once(lambda dt: self.select(account_item), self.selection_time)
+        self.selection_timer = Clock.schedule_once(
+            lambda dt: self.select(account_item), self.selection_time)
 
     def account_touch_move(self, account_item):
         Clock.unschedule(self.selection_timer)
@@ -78,8 +81,10 @@ class Accounts(MDScreen):
 
     def select(self, account_item):
         self.selected = True
-        delete_button = MDFlatButton(text="DELETE", text_color=app.theme_cls.primary_color)
-        delete_button.bind(on_release=lambda x: self.delete_account(account_item, delete_button))
+        delete_button = MDFlatButton(
+            text="DELETE", text_color=app.theme_cls.primary_color)
+        delete_button.bind(on_release=lambda x: self.delete_account(
+            account_item, delete_button))
         self.dialog = MDDialog(
             title=account_item.name,
             md_bg_color=app.bg_color,
@@ -111,7 +116,8 @@ class Accounts(MDScreen):
 
     def pin_account(self, account_item):
         update_query = "UPDATE accounts SET pinned = ? WHERE id = ?"
-        app.db.execute_query(update_query, (not(account_item.pinned), account_item.id))
+        app.db.execute_query(
+            update_query, (not(account_item.pinned), account_item.id))
         self.close_dialog()
         self.display_accounts()
 
@@ -179,7 +185,8 @@ class Accounts(MDScreen):
         if len(name.text.strip()) > 16:
             name.helper_text = "Please limit to 16 characters."
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM accounts WHERE name=? AND user=?)"
-        is_dupli = app.db.execute_read_query(check_duplicate, (name.text.strip(), app.dashboard.current_user.id))
+        is_dupli = app.db.execute_read_query(
+            check_duplicate, (name.text.strip(), app.dashboard.current_user.id))
         try:
             if is_dupli[0][0] == 0:
                 pass
@@ -195,7 +202,8 @@ class Accounts(MDScreen):
 
     def add_account(self, name):
         save_query = "INSERT INTO accounts (user, name, pinned) VALUES (?, ?, ?)"
-        app.db.execute_query(save_query, (app.dashboard.current_user.id, name, False))
+        app.db.execute_query(
+            save_query, (app.dashboard.current_user.id, name, False))
         self.display_accounts()
 
     def delete_account(self, account_item, button):

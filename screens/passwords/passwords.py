@@ -37,7 +37,8 @@ class Passwords(MDScreen):
     def display_passwords(self):
         self.ids.rv.data = {}
         select_query = "SELECT * FROM passwords WHERE account = ?"
-        self.password_list = app.db.execute_read_query(select_query, (self.current_account.id,))
+        self.password_list = app.db.execute_read_query(
+            select_query, (self.current_account.id,))
         if not self.password_list:
             return
         passwords = []
@@ -67,11 +68,14 @@ class Passwords(MDScreen):
         if len(self.password_list) >= app.MAX_PASSWORDS_PER_ACCOUNT:
             self.dialog = MDDialog(
                 title="Account limit reached",
-                text=f"You have reached max password limit of {app.MAX_PASSWORDS_PER_ACCOUNT} per account!",
+                text="You have reached max password limit of " +
+                str(app.MAX_PASSWORDS_PER_ACCOUNT) + " per account!",
                 md_bg_color=app.bg_color,
                 buttons=[
                     MDFlatButton(
-                        text="OK", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
+                        text="OK",
+                        text_color=app.theme_cls.primary_color,
+                        on_release=self.close_dialog
                     ),
                 ],
                 on_dismiss=self.dialog_dismissed,
@@ -88,13 +92,19 @@ class Passwords(MDScreen):
             content_cls=content,
             buttons=[
                 MDFlatButton(
-                    text="CANCEL", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
+                    text="CANCEL",
+                    text_color=app.theme_cls.primary_color,
+                    on_release=self.close_dialog
                 ),
                 MDFlatButton(
-                    text="GENREATE", text_color=app.theme_cls.primary_color, on_release=content.generate_pass
+                    text="GENREATE",
+                    text_color=app.theme_cls.primary_color,
+                    on_release=content.generate_pass
                 ),
                 MDFlatButton(
-                    text="ADD", text_color=app.theme_cls.primary_color, on_release=self.add_password_check
+                    text="ADD",
+                    text_color=app.theme_cls.primary_color,
+                    on_release=self.add_password_check
                 ),
             ],
             on_dismiss=self.dialog_dismissed,
@@ -117,7 +127,8 @@ class Passwords(MDScreen):
         if len(password.text) > 32:
             password.helper_text = "Password too long. Please limit it to 32 characters."
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM passwords WHERE username=? AND account=?)"
-        is_dupli = app.db.execute_read_query(check_duplicate, (username.text.strip(), self.current_account.id))
+        is_dupli = app.db.execute_read_query(
+            check_duplicate, (username.text.strip(), self.current_account.id))
         try:
             if is_dupli[0][0] == 0:
                 pass
@@ -139,13 +150,15 @@ class Passwords(MDScreen):
         encrypting_key = app.encryption.generate_key(salt, user_password)
         password_encrypted = app.encryption.encrypt(encrypting_key, password)
         save_query = "INSERT INTO passwords (user, account, username, password, strength, color) VALUES (?, ?, ?, ?, ?, ?)"
-        app.db.execute_query(save_query, (app.dashboard.current_user.id, self.current_account.id, username, password_encrypted, strength, color))
+        app.db.execute_query(save_query, (app.dashboard.current_user.id,
+                                          self.current_account.id, username, password_encrypted, strength, color))
         self.display_passwords()
 
     def password_touch_down(self, password_item):
         Clock.unschedule(self.selection_timer)
         self.selected = False
-        self.selection_timer = Clock.schedule_once(lambda dt: self.select(password_item), self.selection_time)
+        self.selection_timer = Clock.schedule_once(
+            lambda dt: self.select(password_item), self.selection_time)
 
     def password_touch_move(self, password_item):
         Clock.unschedule(self.selection_timer)
@@ -155,8 +168,10 @@ class Passwords(MDScreen):
 
     def select(self, password_item):
         self.selected = True
-        delete_button = MDFlatButton(text="DELETE", text_color=app.theme_cls.primary_color)
-        delete_button.bind(on_release=lambda x: self.delete_password(password_item, delete_button))
+        delete_button = MDFlatButton(
+            text="DELETE", text_color=app.theme_cls.primary_color)
+        delete_button.bind(on_release=lambda x: self.delete_password(
+            password_item, delete_button))
         self.dialog = MDDialog(
             title=password_item.username,
             md_bg_color=app.bg_color,
@@ -167,7 +182,7 @@ class Passwords(MDScreen):
                 MDFlatButton(
                     text="OPEN", text_color=app.theme_cls.primary_color, on_release=lambda x: self.open_password(password_item)
                 ),
-               delete_button,
+                delete_button,
             ],
             on_dismiss=self.dialog_dismissed,
         )
@@ -184,11 +199,13 @@ class Passwords(MDScreen):
         salt = app.dashboard.current_user.salt
         user_password = app.dashboard.current_user.password
         encrypting_key = app.encryption.generate_key(salt, user_password)
-        password_decrypted = app.encryption.decrypt(encrypting_key, password_item.password)
+        password_decrypted = app.encryption.decrypt(
+            encrypting_key, password_item.password)
         content = ShowPasswordDialogContent()
         content.username = password_item.username
         content.password = password_decrypted
-        show_button = MDFlatButton(text="SHOW", text_color=app.theme_cls.primary_color)
+        show_button = MDFlatButton(
+            text="SHOW", text_color=app.theme_cls.primary_color)
         show_button.bind(on_release=lambda x: content.show_pass(show_button))
         self.dialog = MDDialog(
             title="Password",
@@ -261,16 +278,18 @@ class AddPasswordDialogContent(BoxLayout):
             self.color = '#b21111ff'
         elif strength < 0.66:
             label.text = self.text = "OK"
-            progress_bar.color = label.color =  (.7, .65, .07, 1)
+            progress_bar.color = label.color = (.7, .65, .07, 1)
             self.color = '#b2a511ff'
         else:
             label.text = self.text = "STRONG"
-            progress_bar.color = label.color =  (0, .7, 0, 1)
+            progress_bar.color = label.color = (0, .7, 0, 1)
             self.color = '#00b200ff'
 
     def generate_pass(self, *args):
-        chars = string.ascii_lowercase + string.ascii_uppercase + string.digits + string.punctuation
-        self.ids.password.text = ''.join(secrets.choice(chars) for i in range (32))
+        chars = string.ascii_lowercase + string.ascii_uppercase + \
+            string.digits + string.punctuation
+        self.ids.password.text = ''.join(
+            secrets.choice(chars) for i in range(32))
 
 
 class ShowPasswordDialogContent(BoxLayout):

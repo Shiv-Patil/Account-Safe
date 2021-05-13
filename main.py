@@ -2,12 +2,12 @@ import sys
 import os
 from kivy.config import Config
 Config.set('kivy', 'exit_on_escape', '0')
-# Config.set('graphics', 'minimum_width', 480)
-# Config.set('graphics', 'minimum_height', 720)
-# Config.set('graphics', 'width', 1280)
-# Config.set('graphics', 'height', 720)
+Config.set('graphics', 'minimum_width', 480)
+Config.set('graphics', 'minimum_height', 720)
+Config.set('graphics', 'width', 1280)
+Config.set('graphics', 'height', 720)
 os.environ["KIVY_USE_DEFAULTCONFIG"] = "1"
-# os.environ["KIVY_NO_ARGS"] = "1"
+os.environ["KIVY_NO_ARGS"] = "1"
 
 from kivy.resources import resource_add_path
 from kivy.properties import ColorProperty, NumericProperty, StringProperty

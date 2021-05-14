@@ -114,6 +114,7 @@ class Settings(MDScreen):
 
     def start_import(self, *args):
         def file_chosen(selection):
+            file_chosen.has_been_called = True
             if platform == "android":
                 if not selection:
                     self.backup_imported((False, "Import Cancelled"))
@@ -141,8 +142,12 @@ class Settings(MDScreen):
                 self.importing_backup(file)
             else:
                 self.backup_imported((False, "Import Cancelled"))
+        file_chosen.has_been_called = False
         app.filechooser.open_file(
             title="Import backup", on_selection=file_chosen)
+        if platform != "android":
+            if not file_chosen.has_been_called:
+                self.backup_imported((False, "Import Cancelled"))
 
     @mainthread
     def importing_backup(self, file):

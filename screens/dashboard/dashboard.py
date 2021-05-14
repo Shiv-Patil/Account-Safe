@@ -75,6 +75,7 @@ class Dashboard(MDScreen):
             return
 
         def folder_chosen(selection):
+            folder_chosen.has_been_called = True
             if selection:
                 folder = selection[0]
                 if type(folder) == list:
@@ -88,8 +89,11 @@ class Dashboard(MDScreen):
                 self.backup_created(backups.save_backup(backup_path))
             else:
                 self.backup_created(False)
+        folder_chosen.has_been_called = False
         app.filechooser.choose_dir(
             title="Save backup", on_selection=folder_chosen)
+        if not folder_chosen.has_been_called:
+            self.backup_created(False)
 
     @mainthread
     def backup_created(self, result):

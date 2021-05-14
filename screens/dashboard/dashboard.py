@@ -84,7 +84,7 @@ class Dashboard(MDScreen):
                         self.backup_created(False)
                         return
                 backup_path = os.path.join(
-                    folder, 'krk', self.current_user.text+".accountsafebackup")
+                    folder, self.current_user.text+".accountsafebackup")
                 self.backup_created(backups.save_backup(backup_path))
             else:
                 self.backup_created(False)

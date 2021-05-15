@@ -11,7 +11,7 @@ if platform != "android":
     Config.set('input', 'mouse', 'mouse, multitouch_on_demand')
     os.environ["KIVY_METRICS_DENSITY"] = "1.0"
     Config.set('graphics', 'minimum_width', 400)
-    Config.set('graphics', 'minimum_height', 600)
+    Config.set('graphics', 'minimum_height', 400)
     Config.set('graphics', 'width', 1280)
     Config.set('graphics', 'height', 720)
 

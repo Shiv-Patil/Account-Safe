@@ -119,13 +119,13 @@ class Passwords(MDScreen):
         username.helper_text = ""
         password.helper_text = ""
         if len(username.text.strip()) < 1:
-            username.helper_text = "This field cannot be empty"
+            username.helper_text = "Cannot be empty"
         if len(password.text) < 1:
-            password.helper_text = "This field cannot be empty"
+            password.helper_text = "Cannot be empty"
         if len(username.text.strip()) > 32:
-            username.helper_text = "Name too long. Please limit it to 32 characters."
+            username.helper_text = "Maximum 32 characters allowed"
         if len(password.text) > 32:
-            password.helper_text = "Password too long. Please limit it to 32 characters."
+            password.helper_text = "Maximum 32 characters allowed"
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM passwords WHERE username=? AND account=?)"
         is_dupli = app.db.execute_read_query(
             check_duplicate, (username.text.strip(), self.current_account.id))

@@ -4,12 +4,13 @@ from kivy.config import Config
 from kivy.utils import platform
 Config.set('kivy', 'exit_on_escape', '0')
 os.environ["KIVY_USE_DEFAULTCONFIG"] = "1"
+os.environ["KIVY_METRICS_FONTSCALE"] = "1.0"
 os.environ["KIVY_NO_ARGS"] = "1"
 if platform != "android":
     Config.set('graphics', 'window_state', 'hidden')
     Config.set('input', 'mouse', 'mouse, multitouch_on_demand')
-    os.environ["KIVY_METRICS_DENSITY"] = "1.2"
-    Config.set('graphics', 'minimum_width', 320)
+    os.environ["KIVY_METRICS_DENSITY"] = "1.0"
+    Config.set('graphics', 'minimum_width', 400)
     Config.set('graphics', 'minimum_height', 600)
     Config.set('graphics', 'width', 1280)
     Config.set('graphics', 'height', 720)

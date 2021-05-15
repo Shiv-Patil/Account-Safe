@@ -121,15 +121,15 @@ class Login(MDScreen):
         name.helper_text = ""
         password.helper_text = ""
         if len(name.text.strip()) < 1:
-            name.helper_text = "This field cannot be empty"
+            name.helper_text = "Cannot be empty"
         if len(password.text) < 1:
-            password.helper_text = "This field cannot be empty"
+            password.helper_text = "Cannot be empty"
         elif len(password.text) < 8:
-            password.helper_text = "Password too short. 8 characters minimum required."
+            password.helper_text = "Minimum 8 characters required"
         if len(name.text.strip()) > 32:
-            name.helper_text = "Name too long. Please limit it to 32 characters."
+            name.helper_text = "Maximum 32 characters allowed"
         if len(password.text) > 32:
-            password.helper_text = "Password too long. Please limit it to 32 characters."
+            password.helper_text = "Maximum 32 characters allowed"
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM users WHERE name=?)"
         is_dupli = app.db.execute_read_query(
             check_duplicate, (name.text.strip(),))
@@ -137,7 +137,7 @@ class Login(MDScreen):
             if is_dupli[0][0] == 0:
                 pass
             else:
-                name.helper_text = "This user already exists. Please use a different name."
+                name.helper_text = "This user already exists."
         except BaseException:
             pass
 

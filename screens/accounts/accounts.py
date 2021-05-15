@@ -183,7 +183,7 @@ class Accounts(MDScreen):
         if len(name.text.strip()) < 1:
             name.helper_text = "This field cannot be empty"
         if len(name.text.strip()) > 16:
-            name.helper_text = "Please limit to 16 characters."
+            name.helper_text = "Maximum 16 characters allowed"
         check_duplicate = "SELECT EXISTS(SELECT 1 FROM accounts WHERE name=? AND user=?)"
         is_dupli = app.db.execute_read_query(
             check_duplicate, (name.text.strip(), app.dashboard.current_user.id))
@@ -191,7 +191,7 @@ class Accounts(MDScreen):
             if is_dupli[0][0] == 0:
                 pass
             else:
-                name.helper_text = "This account category already exists."
+                name.helper_text = "Account already exists."
         except BaseException:
             pass
 

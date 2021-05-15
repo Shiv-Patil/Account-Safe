@@ -245,13 +245,16 @@ class Login(MDScreen):
         return False
 
     def login_user_check(self, user_list_item):
+        app.start_loading()
         password = self.dialog.content_cls.ids.password
         password.helper_text = ""
         if self.password_check(user_list_item):
             user_list_item.password = password.text
+            app.stop_loading()
             self.user_logged_in(user_list_item)
             return
         password.helper_text = "Invalid Password."
+        app.stop_loading()
 
     def user_logged_in(self, user_list_item):
         self.close_dialog()

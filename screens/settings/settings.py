@@ -109,7 +109,7 @@ class Settings(MDScreen):
         if not app.has_storage_perms():
             return
         Window.unbind(on_key_up=app.back_button)
-        app.loader.open()
+        app.start_loading()
         Clock.schedule_once(self.start_import, 0.7)
 
     def start_import(self, *args):
@@ -161,7 +161,7 @@ class Settings(MDScreen):
     def backup_imported(self, result):
         if not result[0]:
             self.snackbar.text = result[1]
-            app.loader.dismiss()
+            app.stop_loading()
             self.snackbar.open()
             return
         try:
@@ -194,8 +194,7 @@ class Settings(MDScreen):
             app.logger.error('App: Import Backup: ' + str(e))
             self.snackbar.text = "Something went wrong"
             traceback.print_exc()
-        Window.bind(on_key_up=app.back_button)
-        app.loader.dismiss()
+        app.stop_loading()
         self.snackbar.open()
 
     def dialog_dismissed(self, *args):

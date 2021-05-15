@@ -196,6 +196,7 @@ class Passwords(MDScreen):
 
     def open_password(self, password_item):
         self.close_dialog()
+        app.start_loading()
         salt = app.dashboard.current_user.salt
         user_password = app.dashboard.current_user.password
         encrypting_key = app.encryption.generate_key(salt, user_password)
@@ -224,6 +225,7 @@ class Passwords(MDScreen):
             on_dismiss=self.dialog_dismissed,
         )
         content.start(show_button)
+        app.stop_loading()
         self.dialog.open()
         Window.unbind(on_key_up=app.back_button)
         Window.bind(on_key_up=self.events)

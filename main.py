@@ -7,9 +7,10 @@ os.environ["KIVY_USE_DEFAULTCONFIG"] = "1"
 os.environ["KIVY_NO_ARGS"] = "1"
 if platform != "android":
     Config.set('graphics', 'window_state', 'hidden')
-    os.environ["KIVY_METRICS_DENSITY"] = "1.5"
-    Config.set('graphics', 'minimum_width', 480)
-    Config.set('graphics', 'minimum_height', 720)
+    Config.set('input', 'mouse', 'mouse, multitouch_on_demand')
+    os.environ["KIVY_METRICS_DENSITY"] = "1.2"
+    Config.set('graphics', 'minimum_width', 320)
+    Config.set('graphics', 'minimum_height', 600)
     Config.set('graphics', 'width', 1280)
     Config.set('graphics', 'height', 720)
 
@@ -58,7 +59,7 @@ class AccountSafe(MDApp):
         self.switch_screen("settings")
 
     def build(self):
-        self.icon = self.resource_path('res/icon.png')
+        self.icon = self.resource_path(os.path.join('res', 'icon.png'))
         self.app_settings = os.path.join(
             getattr(self, 'user_data_dir'), 'database', 'config.json')
 
@@ -99,6 +100,14 @@ class AccountSafe(MDApp):
         self.switch_screen("login")
         if platform != "android":
             Window.show()
+
+    def start_loading(self):
+        Window.unbind(on_key_up=self.back_button)
+        self.loader.open()
+
+    def stop_loading(self):
+        Window.bind(on_key_up=self.back_button)
+        self.loader.dismiss()
 
     def on_dropfile(self, window, file_path):
         if self.root.current == 'login':
@@ -178,9 +187,10 @@ loading = """
         pos_hint: {'center_x': .5, 'center_y': .5}
         active: True
 """
+
+
 class Loading(ModalView):
-    pass
-Builder.load_string(loading)
+    Builder.load_string(loading)
 
 
 resource_add_path(AccountSafe.resource_path(os.path.join('screens', 'login')))

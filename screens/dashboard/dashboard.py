@@ -57,8 +57,7 @@ class Dashboard(MDScreen):
     def create_backup(self):
         if not app.has_storage_perms():
             return
-        Window.unbind(on_key_up=app.back_button)
-        app.loader.open()
+        app.start_loading()
         Clock.schedule_once(self.creating_backup, 0.7)
 
     def creating_backup(self, *args):
@@ -70,8 +69,7 @@ class Dashboard(MDScreen):
                 ), Context.getApplicationContext().getPackageName() + ".fileprovider", File(self.filepath))
                 if uri:
                     self.share.share_uri(uri)
-            Window.bind(on_key_up=app.back_button)
-            app.loader.dismiss()
+            app.stop_loading()
             return
 
         def folder_chosen(selection):
@@ -97,8 +95,7 @@ class Dashboard(MDScreen):
 
     @mainthread
     def backup_created(self, result):
-        Window.bind(on_key_up=app.back_button)
-        app.loader.dismiss()
+        app.stop_loading()
         if not result:
             self.snackbar.text = "Operation Cancelled"
             self.snackbar.open()

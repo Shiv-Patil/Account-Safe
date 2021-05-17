@@ -6,8 +6,9 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 import secrets
 from kivy.core.window import Window
+from threading import Thread
 from cryptography.fernet import InvalidToken
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivymd.app import MDApp
 app = MDApp.get_running_app()
 
@@ -67,14 +68,22 @@ class Login(MDScreen):
             })
 
     def add_button_clicked(self):
+        try:
+            if self.tap_target_view.state == "open":
+                self.tap_target_view.stop()
+        except BaseException:
+            pass
         if len(self.user_list) >= app.MAX_USERS:
             self.dialog = MDDialog(
                 title="User limit reached",
-                text=f"You have reached max user limit of {app.MAX_USERS}!",
+                text=f"You have reached max user limit of " +
+                str(app.MAX_USERS) + "!",
                 md_bg_color=app.bg_color,
                 buttons=[
                     MDFlatButton(
-                        text="OK", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
+                        text="OK",
+                        text_color=app.theme_cls.primary_color,
+                        on_release=self.close_dialog
                     ),
                 ],
                 on_dismiss=self.dialog_dismissed,
@@ -83,11 +92,6 @@ class Login(MDScreen):
             Window.unbind(on_key_up=app.back_button)
             Window.bind(on_key_up=self.events)
             return
-        try:
-            if self.tap_target_view.state == "open":
-                self.tap_target_view.stop()
-        except BaseException:
-            pass
         content = AddUserDialogContent()
         self.dialog = MDDialog(
             title="Add new user",
@@ -147,13 +151,22 @@ class Login(MDScreen):
         self.add_user(name.text.strip(), password.text)
 
     def add_user(self, name, password):
-        salt = secrets.token_bytes(32)
-        encrypting_key = app.encryption.generate_key(salt, password)
-        key = app.encryption.encrypt(encrypting_key, 'KrYmZiN')
-        save_query = "INSERT INTO users (name, key, salt, avatar) VALUES (?, ?, ?, ?)"
-        app.db.execute_query(save_query, (name, key, salt,
-                                          "data/logo/kivy-icon-128.png"))
-        self.display_users()
+        app.start_loading()
+        def threaded(self, name, callback):
+            salt = secrets.token_bytes(32)
+            encrypting_key = app.encryption.generate_key(salt, password)
+            key = app.encryption.encrypt(encrypting_key, 'KrYmZiN')
+            callback(self, name, key, salt)
+        @mainthread
+        def save(self, name, key, salt):
+            save_query = "INSERT INTO users (name, key, salt, avatar) VALUES (?, ?, ?, ?)"
+            app.db.execute_query(save_query, (name, key, salt,
+                                              "data/logo/kivy-icon-128.png"))
+            app.stop_loading()
+            self.display_users()
+        thread = Thread(target=threaded, args=(self, name, save))
+        thread.daemon = True
+        thread.start()
 
     def close_dialog(self, *args):
         self.dialog_dismissable = True
@@ -231,30 +244,39 @@ class Login(MDScreen):
         Window.unbind(on_key_up=app.back_button)
         Window.bind(on_key_up=self.events)
 
-    def password_check(self, user_list_item):
+    def password_check(self, user_list_item, callback):
         password = self.dialog.content_cls.ids.password
         salt = user_list_item.salt
-        encrypting_key = app.encryption.generate_key(salt, password.text)
-        try:
-            decrypted = app.encryption.decrypt(
-                encrypting_key, user_list_item.key)
-            if decrypted == 'KrYmZiN':
-                return True
-        except InvalidToken:
-            pass
-        return False
+        key = user_list_item.key
+        app.start_loading(self.events)
+        def threaded_check(self):
+            encrypting_key = app.encryption.generate_key(salt, password.text)
+            try:
+                decrypted = app.encryption.decrypt(
+                    encrypting_key, key)
+                if decrypted == 'KrYmZiN':
+                    callback(self, True)
+                    return
+            except InvalidToken:
+                pass
+            callback(self, False)
+        thread = Thread(target=threaded_check, args=(self,))
+        thread.daemon = True
+        thread.start()
 
     def login_user_check(self, user_list_item):
-        app.start_loading()
         password = self.dialog.content_cls.ids.password
         password.helper_text = ""
-        if self.password_check(user_list_item):
-            user_list_item.password = password.text
-            app.stop_loading()
-            self.user_logged_in(user_list_item)
-            return
-        password.helper_text = "Invalid Password."
-        app.stop_loading()
+        @mainthread
+        def callback(self, result):
+            if result:
+                app.stop_loading(None)
+                user_list_item.password = password.text
+                self.user_logged_in(user_list_item)
+                return
+            app.stop_loading(self.events)
+            password.helper_text = "Invalid Password."
+        self.password_check(user_list_item, callback)
 
     def user_logged_in(self, user_list_item):
         self.close_dialog()
@@ -286,15 +308,22 @@ class Login(MDScreen):
 
     def delete_user(self, user_list_item):
         password = self.dialog.content_cls.ids.password
-        password.helper_text = ""
-        if not self.password_check(user_list_item):
-            password.helper_text = "Invalid Password."
+        if password.text == "":
+            password.helper_text = "Cannot be empty"
             return
-        self.close_dialog()
-        delete_query = "DELETE FROM users WHERE id = ?"
-        app.db.execute_query(delete_query, (user_list_item.id,))
-        self.display_users()
-
+        password.helper_text = ""
+        @mainthread
+        def callback(self, result):
+            if result:
+                app.stop_loading(None)
+                self.close_dialog()
+                delete_query = "DELETE FROM users WHERE id = ?"
+                app.db.execute_query(delete_query, (user_list_item.id,))
+                self.display_users()
+                return
+            app.stop_loading(self.events)
+            password.helper_text = "Invalid Password."
+        self.password_check(user_list_item, callback)
 
 class AddUserDialogContent(BoxLayout):
     pass

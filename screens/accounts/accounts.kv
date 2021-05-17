@@ -2,6 +2,12 @@
 
 <Accounts>:
     name: 'accounts'
+    canvas.after:
+        Color:
+            rgba: 0, 0, 0, 0.3
+        Rectangle:
+            size: dp(3), self.height
+            pos: self.x-dp(3), self.y
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -121,7 +127,7 @@
         size_hint_y: None
         height: self.texture_size[1]
 
-    MDTextField:
+    TextField:
         id: name
         hint_text: "Category"
         helper_text: ""

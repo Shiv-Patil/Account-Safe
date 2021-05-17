@@ -32,7 +32,8 @@ class Dashboard(MDScreen):
         snackbar_y="10dp",
         size_hint_x=(
             Window.width - (dp(10) * 2)
-        ) / Window.width
+        ) / Window.width,
+        duration=0.6
     )
 
     def on_pre_enter(self):

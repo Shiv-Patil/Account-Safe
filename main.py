@@ -20,8 +20,10 @@ from kivy.properties import ColorProperty, NumericProperty, StringProperty
 from kivy.logger import Logger
 from fonts import definitions
 from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager, FadeTransition
+from kivy.uix.screenmanager import ScreenManager, FadeTransition, CardTransition, NoTransition
 from kivy.uix.modalview import ModalView
+from kivy.clock import mainthread
+from widgets import textfield
 import json
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -39,9 +41,11 @@ else:
 
 class AccountSafe(MDApp):
 
+    __version__ = "1.1"
     name = "Account Safe"
     title = "Account Safe"
     theme = StringProperty("Light")
+    transition = StringProperty("Fade")
     text_color = ColorProperty([0, 0, 0, 1])
     bg_color = ColorProperty([0.98, 0.98, 0.98, 1])
     bg_color_2 = ColorProperty([0.92, 0.92, 0.92, 1])
@@ -56,6 +60,12 @@ class AccountSafe(MDApp):
     MAX_ACCOUNTS_PER_USER = NumericProperty(20)
     MAX_PASSWORDS_PER_ACCOUNT = NumericProperty(10)
 
+    transitions = {
+        "Fade": FadeTransition,
+        "Card": CardTransition,
+        "None": NoTransition,
+    }
+
     def open_settings(self, *args):
         self.switch_screen("settings")
 
@@ -69,6 +79,7 @@ class AccountSafe(MDApp):
         from screens.accounts import accounts
         from screens.passwords import passwords
         from screens.settings import settings
+        from screens.about import about
         from sqloperator import sqloperator
         from modules import encryption
 
@@ -85,12 +96,14 @@ class AccountSafe(MDApp):
         self.accounts = accounts.Accounts()
         self.passwords = passwords.Passwords()
         self.settings = settings.Settings()
+        self.about = about.About()
         self.screens = {
             "login": self.login,
             "dashboard": self.dashboard,
             "accounts": self.accounts,
             "passwords": self.passwords,
             "settings": self.settings,
+            "about": self.about,
         }
         self.screen_history = []
         Window.bind(on_key_up=self.back_button)
@@ -102,12 +115,24 @@ class AccountSafe(MDApp):
         if platform != "android":
             Window.show()
 
-    def start_loading(self):
-        Window.unbind(on_key_up=self.back_button)
+    @mainthread
+    def start_loading(self, *to_unbind):
+        if to_unbind:
+            if to_unbind[0]:
+                for func in to_unbind:
+                    Window.unbind(on_key_up=func)
+        else:
+            Window.unbind(on_key_up=self.back_button)
         self.loader.open()
 
-    def stop_loading(self):
-        Window.bind(on_key_up=self.back_button)
+    @mainthread
+    def stop_loading(self, *to_bind):
+        if to_bind:
+            if to_bind[0]:
+                for func in to_bind:
+                    Window.bind(on_key_up=func)
+        else:
+            Window.bind(on_key_up=self.back_button)
         self.loader.dismiss()
 
     def on_dropfile(self, window, file_path):
@@ -118,6 +143,8 @@ class AccountSafe(MDApp):
             return
 
     def switch_screen(self, screen_name):
+        self.root.transition.mode = "push"
+        self.root.transition.direction = "left"
         self.root.switch_to(self.screens.get(screen_name))
         self.screen_history.append(screen_name)
 
@@ -125,6 +152,8 @@ class AccountSafe(MDApp):
         if keyboard in (1001, 27):
             self.screen_history.pop()
             if self.screen_history != []:
+                self.root.transition.mode = "pop"
+                self.root.transition.direction = "right"
                 self.root.switch_to(self.screens.get(self.screen_history[-1]))
             else:
                 self.stop()
@@ -134,6 +163,9 @@ class AccountSafe(MDApp):
         self.set_theme()
         return True
 
+    def on_resume(self):
+        Window.update_viewport()
+
     def on_stop(self):
         self.set_theme()
 
@@ -142,8 +174,9 @@ class AccountSafe(MDApp):
             try:
                 with open(self.app_settings, 'r') as fp:
                     config = json.load(fp)
-                    self.theme = config.get("theme")
-                    self.theme_cls.primary_palette = config.get("color")
+                    self.theme = config.get("theme", "Light")
+                    self.theme_cls.primary_palette = config.get("color", "Purple")
+                    self.transition = config.get("transition", "Fade")
             except BaseException as e:
                 self.logger.error(e)
                 self.set_theme()
@@ -152,14 +185,22 @@ class AccountSafe(MDApp):
             self.set_theme()
             self.theme_cls.primary_palette = "Purple"
         self.settings.change_theme(self.theme)
+        self.change_transition(self.transition)
 
     def set_theme(self):
         try:
             with open(self.app_settings, 'w+') as fp:
                 json.dump(
-                    {"theme": self.theme, "color": self.theme_cls.primary_palette}, fp)
+                    {"theme": self.theme,
+                        "color": self.theme_cls.primary_palette,
+                        "transition": self.transition},
+                    fp)
         except BaseException as e:
             self.logger.error(e)
+
+    def change_transition(self, transition):
+        self.transition = transition
+        self.root.transition = self.transitions.get(transition, FadeTransition)()
 
     def has_storage_perms(self):
         if platform == "android":
@@ -194,7 +235,8 @@ class Loading(ModalView):
     Builder.load_string(loading)
 
 
-resource_add_path(AccountSafe.resource_path(os.path.join('screens', 'login')))
+resource_add_path(AccountSafe.resource_path(
+    os.path.join('screens', 'login')))
 resource_add_path(AccountSafe.resource_path(
     os.path.join('screens', 'dashboard')))
 resource_add_path(AccountSafe.resource_path(
@@ -203,6 +245,8 @@ resource_add_path(AccountSafe.resource_path(
     os.path.join('screens', 'passwords')))
 resource_add_path(AccountSafe.resource_path(
     os.path.join('screens', 'settings')))
+resource_add_path(AccountSafe.resource_path(
+    os.path.join('screens', 'about')))
 
 definitions.add_fonts(AccountSafe.resource_path)
 

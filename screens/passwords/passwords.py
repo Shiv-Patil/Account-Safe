@@ -1,12 +1,14 @@
 from kivymd.uix.screen import MDScreen
 from kivy.lang import Builder
-from kivy.clock import Clock
+from kivy.clock import Clock, mainthread
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from kivy.core.window import Window
 from kivy.core.clipboard import Clipboard
 from password_strength import PasswordStats
+from kivymd.uix.taptargetview import MDTapTargetView
+from threading import Thread
 import secrets
 import string
 from kivymd.app import MDApp
@@ -27,6 +29,11 @@ class Passwords(MDScreen):
     def on_leave(self):
         self.ids.rv.data = {}
         self.ids.rv.scroll_y = 1
+        try:
+            if self.tap_target_view.state == "open":
+                self.tap_target_view.stop()
+        except BaseException:
+            pass
 
     def on_enter(self):
         app.logger.info('App: SCREEN: Passwords')
@@ -40,6 +47,16 @@ class Passwords(MDScreen):
         self.password_list = app.db.execute_read_query(
             select_query, (self.current_account.id,))
         if not self.password_list:
+            self.tap_target_view = MDTapTargetView(
+                widget=self.ids.add_button_cover,
+                title_text="No passwords stored",
+                description_text="Click on this button to add one!",
+                widget_position="right_bottom",
+                stop_on_target_touch=False,
+                target_circle_color=app.bg_color[:3]
+            )
+            if self.tap_target_view.state == "close":
+                self.tap_target_view.start()
             return
         passwords = []
         for i in self.password_list:
@@ -65,6 +82,11 @@ class Passwords(MDScreen):
             })
 
     def add_button_clicked(self):
+        try:
+            if self.tap_target_view.state == "open":
+                self.tap_target_view.stop()
+        except BaseException:
+            pass
         if len(self.password_list) >= app.MAX_PASSWORDS_PER_ACCOUNT:
             self.dialog = MDDialog(
                 title="Account limit reached",
@@ -143,16 +165,25 @@ class Passwords(MDScreen):
         self.add_password(username.text.strip(), password.text)
 
     def add_password(self, username, password):
+        app.start_loading()
         strength = self.dialog.content_cls.text
         color = self.dialog.content_cls.color
         salt = app.dashboard.current_user.salt
         user_password = app.dashboard.current_user.password
-        encrypting_key = app.encryption.generate_key(salt, user_password)
-        password_encrypted = app.encryption.encrypt(encrypting_key, password)
-        save_query = "INSERT INTO passwords (user, account, username, password, strength, color) VALUES (?, ?, ?, ?, ?, ?)"
-        app.db.execute_query(save_query, (app.dashboard.current_user.id,
-                                          self.current_account.id, username, password_encrypted, strength, color))
-        self.display_passwords()
+        def threaded(self, username, password, strength, color, salt, user_password, callback):
+            encrypting_key = app.encryption.generate_key(salt, user_password)
+            password_encrypted = app.encryption.encrypt(encrypting_key, password)
+            callback(self, username, password_encrypted, strength, color)
+        @mainthread
+        def save(self, username, password_encrypted, strength, color):
+            save_query = "INSERT INTO passwords (user, account, username, password, strength, color) VALUES (?, ?, ?, ?, ?, ?)"
+            app.db.execute_query(save_query, (app.dashboard.current_user.id,
+                self.current_account.id, username, password_encrypted, strength, color))
+            app.stop_loading()
+            self.display_passwords()
+        thread = Thread(target=threaded, args=(self, username, password, strength, color, salt, user_password, save))
+        thread.daemon = True
+        thread.start()
 
     def password_touch_down(self, password_item):
         Clock.unschedule(self.selection_timer)
@@ -199,36 +230,43 @@ class Passwords(MDScreen):
         app.start_loading()
         salt = app.dashboard.current_user.salt
         user_password = app.dashboard.current_user.password
-        encrypting_key = app.encryption.generate_key(salt, user_password)
-        password_decrypted = app.encryption.decrypt(
-            encrypting_key, password_item.password)
         content = ShowPasswordDialogContent()
         content.username = password_item.username
-        content.password = password_decrypted
-        show_button = MDFlatButton(
-            text="SHOW", text_color=app.theme_cls.primary_color)
-        show_button.bind(on_release=lambda x: content.show_pass(show_button))
-        self.dialog = MDDialog(
-            title="Password",
-            md_bg_color=app.bg_color,
-            type="custom",
-            content_cls=content,
-            buttons=[
-                MDFlatButton(
-                    text="CLOSE", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
-                ),
-                MDFlatButton(
-                    text="COPY", text_color=app.theme_cls.primary_color, on_release=lambda x: Clipboard.copy(password_decrypted)
-                ),
-                show_button,
-            ],
-            on_dismiss=self.dialog_dismissed,
-        )
-        content.start(show_button)
-        app.stop_loading()
-        self.dialog.open()
-        Window.unbind(on_key_up=app.back_button)
-        Window.bind(on_key_up=self.events)
+        def threaded(self, callback):
+            encrypting_key = app.encryption.generate_key(salt, user_password)
+            password_decrypted = app.encryption.decrypt(
+                encrypting_key, password_item.password)
+            callback(self, password_decrypted)
+        @mainthread
+        def callback_show(self, password_decrypted):
+            content.password = password_decrypted
+            show_button = MDFlatButton(
+                text="SHOW", text_color=app.theme_cls.primary_color)
+            show_button.bind(on_release=lambda x: content.show_pass(show_button))
+            self.dialog = MDDialog(
+                title="Password",
+                md_bg_color=app.bg_color,
+                type="custom",
+                content_cls=content,
+                buttons=[
+                    MDFlatButton(
+                        text="CLOSE", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
+                    ),
+                    MDFlatButton(
+                        text="COPY", text_color=app.theme_cls.primary_color, on_release=lambda x: Clipboard.copy(password_decrypted)
+                    ),
+                    show_button,
+                ],
+                on_dismiss=self.dialog_dismissed,
+            )
+            content.start(show_button)
+            app.stop_loading()
+            self.dialog.open()
+            Window.unbind(on_key_up=app.back_button)
+            Window.bind(on_key_up=self.events)
+        thread = Thread(target=threaded, args=(self, callback_show))
+        thread.daemon
+        thread.start()
 
     def delete_password(self, password_item, button):
         if not button.theme_text_color == "Custom":

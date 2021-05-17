@@ -1,4 +1,5 @@
 kivy==2.0.0
+https://github.com/kivymd/kivymd/archive/8f83652a5c6eb4e03eb123458a4dd4a9d8730612.zip
 cryptography==3.4.7
 password-strength==0.0.3.post2
 Pillow==8.2.0

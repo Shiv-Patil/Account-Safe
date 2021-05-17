@@ -1,4 +1,5 @@
-#: import ew kivy.uix.effectwidget
+#:import Window kivy.core.window.Window
+#:import os os
 
 <Login>:
     name: 'login'
@@ -84,7 +85,7 @@
         orientation: 'vertical'
         adaptive_height: True
 
-        MDTextField:
+        TextField:
             id: name
             hint_text: "Name"
             helper_text: ""
@@ -95,7 +96,7 @@
             shorten: True
             height: self.minimum_height*1.2
 
-        MDTextField:
+        TextField:
             id: password
             hint_text: "Password"
             helper_text: ""
@@ -124,7 +125,7 @@
         orientation: 'horizontal'
         size_hint_y: None
         height: self.minimum_height
-        MDTextField:
+        TextField:
             id: password
             hint_text: "Password"
             helper_text: ""
@@ -164,7 +165,7 @@
         orientation: 'horizontal'
         size_hint_y: None
         height: self.minimum_height
-        MDTextField:
+        TextField:
             id: password
             hint_text: "Password"
             helper_text: ""

@@ -1,8 +1,11 @@
-#:import Snackbar kivymd.uix.snackbar.Snackbar
-#:import Window kivy.core.window.Window
-
 <Dashboard>:
     name: 'dashboard'
+    canvas.after:
+        Color:
+            rgba: 0, 0, 0, 0.3
+        Rectangle:
+            size: dp(3), self.height
+            pos: self.x-dp(3), self.y
 
     MDBoxLayout:
         orientation: 'vertical'

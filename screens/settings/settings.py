@@ -14,6 +14,8 @@ from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.button import MDIconButton
 from modules import backups
 from kivy.utils import platform
+import webbrowser
+from threading import Thread
 import traceback
 import os
 from kivy.metrics import dp
@@ -31,11 +33,15 @@ class Settings(MDScreen):
         snackbar_y="10dp",
         size_hint_x=(
             Window.width - (dp(10) * 2)
-        ) / Window.width
+        ) / Window.width,
+        duration=0.6
     )
 
     def on_enter(self):
         app.logger.info('App: SCREEN: Settings')
+
+    def on_leave(self):
+        self.ids.sv.scroll_y = 1
 
     def theme_picker(self):
         content = ThemeConfirmContent()
@@ -66,16 +72,61 @@ class Settings(MDScreen):
         Window.bind(on_key_up=self.events)
 
     def color_picker(self):
+        @mainthread
+        def open_color_dialog(self):
+            self.color_dialog.open()
+            Window.unbind(on_key_up=app.back_button)
+            Window.bind(on_key_up=self.events)
         if not self.color_dialog:
-            self.color_dialog = PrimaryColorPicker()
-            self.color_dialog.bind(on_dismiss=self.dialog_dismissed)
-        self.color_dialog.open()
-        Window.unbind(on_key_up=app.back_button)
-        Window.bind(on_key_up=self.events)
+            app.start_loading()
+            def make_color_dialog(self):
+                self.color_dialog = PrimaryColorPicker()
+                self.color_dialog.bind(on_dismiss=self.dialog_dismissed)
+                app.stop_loading()
+                open_color_dialog(self)
+            thread = Thread(target=make_color_dialog, args=(self,))
+            thread.daemon = True
+            thread.start()
+        else:
+            open_color_dialog(self)
 
     def set_theme(self, *args):
         self.close_dialog()
         Clock.schedule_once(lambda x: self.change_theme(self.selected_theme))
+
+    def transition_picker(self):
+        content = TransitionConfirmContent()
+        if app.transition == 'Fade':
+            content.ids.check_fade._do_press()
+        elif app.transition == 'Card':
+            content.ids.check_card._do_press()
+        else:
+            content.ids.check_none._do_press()
+        self.dialog = MDDialog(
+            title="Choose transition",
+            md_bg_color=app.bg_color,
+            type="custom",
+            content_cls=content,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL", text_color=app.theme_cls.primary_color, on_release=self.close_dialog
+                ),
+                MDFlatButton(
+                    text="OK", text_color=app.theme_cls.primary_color, on_release=self.set_transition
+                ),
+            ],
+            on_dismiss=self.dialog_dismissed,
+        )
+        for item in self.dialog.items:
+            if item.text == app.transition:
+                item.set_icon()
+        self.dialog.open()
+        Window.unbind(on_key_up=app.back_button)
+        Window.bind(on_key_up=self.events)
+
+    def set_transition(self, *args):
+        self.close_dialog()
+        Clock.schedule_once(lambda x: app.change_transition(self.selected_transition))
 
     def change_theme(self, theme):
         if theme == 'Dark':
@@ -197,6 +248,15 @@ class Settings(MDScreen):
         app.stop_loading()
         self.snackbar.open()
 
+    def about_app(self):
+        app.switch_screen('about')
+
+    def rate_app(self):
+        webbrowser.open("https://play.google.com/store/apps/details?id=org.krymzin.locker")
+
+    def source_code(self):
+        webbrowser.open("https://github.com/Shiv-Patil/Account-Safe")
+
     def dialog_dismissed(self, *args):
         return True if not self.dialog_dismissable else False
 
@@ -241,6 +301,18 @@ class PrimaryColorSelector(MDIconButton):
 
 class PrimaryColorPicker(BaseDialog, SpecificBackgroundColorBehavior, FakeRectangularElevationBehavior):
     pass
+
+
+class TransitionConfirmContent(BoxLayout):
+    divider = None
+
+    def set_icon(self):
+        self.ids.check.active = True
+        check_list = self.ids.check.get_widgets(self.ids.check.group)
+        for check in check_list:
+            if check != self.ids.check:
+                check.active = False
+        app.settings.selected_transition = self.text
 
 
 Builder.load_file('settings.kv')

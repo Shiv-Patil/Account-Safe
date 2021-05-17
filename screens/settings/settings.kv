@@ -1,5 +1,11 @@
 <Settings>:
     name: 'settings'
+    canvas.after:
+        Color:
+            rgba: 0, 0, 0, 0.3
+        Rectangle:
+            size: dp(3), self.height
+            pos: self.x-dp(3), self.y
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -11,6 +17,7 @@
             elevation: app.elevation
 
         ScrollView:
+            id: sv
             effect_cls : 'ScrollEffect'
 
             MDBoxLayout:
@@ -97,6 +104,38 @@
                                 size_hint_y: None
                                 height: self.texture_size[1]
 
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.transition_picker()
+
+                        MDIcon:
+                            id: theme_icon
+                            icon: "arrow-left-right"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+
+                            MDLabel:
+                                text: "Transition"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                            MDLabel:
+                                text: app.transition
+                                font_style: 'Caption'
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
                 MDSeparator
 
                 MDBoxLayout:
@@ -142,6 +181,78 @@
                                 size_hint_y: None
                                 height: self.texture_size[1]
 
+                MDSeparator
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    padding: 0, dp(20), 0, 0
+                    spacing: dp(4)
+
+                    MDBoxLayout:
+                        adaptive_height: True
+                        padding: dp(20), 0, 0, 0
+
+                        MDLabel:
+                            text: "Help"
+                            font_style: 'Subtitle2'
+                            size_hint_y: None
+                            height: self.texture_size[1]
+
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.about_app()
+
+                        MDIcon:
+                            id: backup_icon
+                            icon: "information-outline"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            pos_hint: {'center_y': .5}
+
+                            MDLabel:
+                                text: "About"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
+                    MDCard:
+                        size_hint_y: None
+                        height: self.minimum_height
+                        md_bg_color: app.bg_color
+                        ripple_behavior: True
+                        elevation: 0
+                        padding: dp(20), dp(10), 0, dp(10)
+                        spacing: dp(15)
+                        on_release: root.rate_app()
+
+                        MDIcon:
+                            id: backup_icon
+                            icon: "star"
+                            size_hint: None, None
+                            size: self.texture_size
+                            pos_hint: {'center_y': .5}
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            pos_hint: {'center_y': .5}
+
+                            MDLabel:
+                                text: "Rate"
+                                size_hint_y: None
+                                height: self.texture_size[1]
+
 
 <ThemeConfirmContent>:
     size_hint_y: None
@@ -161,7 +272,7 @@
         CheckBox:
             id: check_light
             allow_no_selection: False
-            group: "check"
+            group: "theme"
             size_hint_x: None
             width: dp(30)
             on_active: app.settings.selected_theme = 'Light'
@@ -184,7 +295,7 @@
         CheckBox:
             id: check_dark
             allow_no_selection: False
-            group: "check"
+            group: "theme"
             size_hint_x: None
             width: dp(30)
             on_active: app.settings.selected_theme = 'Dark'
@@ -244,3 +355,78 @@
             text: "CLOSE"
             pos: root.width - self.width - 10, 10
             on_release: app.settings.close_dialog()
+
+
+<TransitionConfirmContent>:
+    size_hint_y: None
+    height: self.minimum_height
+    orientation: 'vertical'
+
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        md_bg_color: app.bg_color
+        ripple_behavior: True
+        elevation: 0
+        padding: 0, dp(10)
+        spacing: dp(10)
+        on_release: check_fade._do_press()
+
+        CheckBox:
+            id: check_fade
+            allow_no_selection: False
+            group: "transition"
+            size_hint_x: None
+            width: dp(30)
+            on_active: app.settings.selected_transition = 'Fade'
+
+        MDLabel:
+            text: 'Fade'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        md_bg_color: app.bg_color
+        ripple_behavior: True
+        elevation: 0
+        padding: 0, dp(10)
+        spacing: dp(10)
+        on_release: check_card._do_press()
+
+        CheckBox:
+            id: check_card
+            allow_no_selection: False
+            group: "transition"
+            size_hint_x: None
+            width: dp(30)
+            on_active: app.settings.selected_transition = 'Card'
+
+        MDLabel:
+            text: 'Card'
+            size_hint_y: None
+            height: self.texture_size[1]
+
+    MDCard:
+        size_hint_y: None
+        height: self.minimum_height
+        md_bg_color: app.bg_color
+        ripple_behavior: True
+        elevation: 0
+        padding: 0, dp(10)
+        spacing: dp(10)
+        on_release: check_none._do_press()
+
+        CheckBox:
+            id: check_none
+            allow_no_selection: False
+            group: "transition"
+            size_hint_x: None
+            width: dp(30)
+            on_active: app.settings.selected_transition = 'None'
+
+        MDLabel:
+            text: 'None'
+            size_hint_y: None
+            height: self.texture_size[1]

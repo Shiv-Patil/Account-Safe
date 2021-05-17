@@ -1,5 +1,6 @@
 from kivy.uix.recyclegridlayout import RecycleGridLayout
 
+
 class RecycleGridLayoutFix(RecycleGridLayout):
     def __init__(self, **kwargs):
         super(RecycleGridLayoutFix, self).__init__(**kwargs)

@@ -31,7 +31,7 @@ Made using [Kivy](https://kivy.org/ "Kivy homepage")
 
 ## Binaries
 
-Android: [Coming Soon!]  
+Android: [Play Store](https://play.google.com/store/apps/details?id=org.krymzin.locker)  
 Windows: [Releases](https://github.com/Shiv-Patil/Account-Safe/releases)  
 Deb-based Linux: [Releases](https://github.com/Shiv-Patil/Account-Safe/releases)
 

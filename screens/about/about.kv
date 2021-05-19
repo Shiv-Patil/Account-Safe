@@ -40,13 +40,16 @@
 
                 AnchorLayout:
                     size_hint_y: None
-                    height: logo.height
+                    height: logo.height + dp(20)
+                    padding: 0, dp(10)
 
                     Image:
                         id: logo
                         size_hint: None, None
                         height: dp(120)
+                        width: dp(120)
                         source: app.resource_path(os.path.join("res", "icon.png"))
+                        allow_stretch: True
 
                 MDLabel:
                     text: "GNU General Public License v3.0"

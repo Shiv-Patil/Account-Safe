@@ -1,6 +1,7 @@
 import json
 from modules import encryption
 from kivymd.app import MDApp
+from kivy.utils import platform
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from cryptography.fernet import InvalidToken
@@ -120,4 +121,9 @@ def load_backup(path):
     except ValidationError:
         return (False, "Backup file corrupted")
     loaded['user'][2] = loaded['user'][2].encode('cp437')
+    if platform == "android":
+        try:
+            os.remove(path)
+        except BaseException as e:
+            app.logger.error("App: load_backup: " + str(e))
     return (True, loaded)

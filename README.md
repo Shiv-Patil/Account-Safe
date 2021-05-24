@@ -38,7 +38,7 @@ Deb-based Linux: [Releases](https://github.com/Shiv-Patil/Account-Safe/releases)
 ## Running source code
 
 - (Optional) Create and activate a virtualenv
-- Clone this reporitory or [download](https://github.com/Shiv-Patil/Account-Safe/archive/HEAD.zip) zip
+- Clone this repository or [download](https://github.com/Shiv-Patil/Account-Safe/archive/HEAD.zip) zip
 - Change directory to `Account-Safe`
 - Run `pip install -r requirements.txt`
 - Run `python main.py`
